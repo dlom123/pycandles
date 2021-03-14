@@ -8,7 +8,8 @@ NORTH = 90
 SOUTH = 270
 EAST = 0
 WEST = 180
-PADDING = 5
+PAD_X = 5  # number of pixels space separating each candle
+PAD_Y = 0.1  # percentage of space above/below highest/lowest candles
 
 price_highest: int
 price_lowest: int
@@ -28,8 +29,7 @@ def main():
         candles.append(candle)
 
     high_low_diff = price_highest - price_lowest
-    pad_percentage = 0.1
-    pad_amount = high_low_diff * pad_percentage
+    pad_amount = high_low_diff * PAD_Y
     bounds_top = round(price_highest + pad_amount, 1)
     bounds_bottom = round(price_lowest - pad_amount, 1)
 
@@ -45,7 +45,7 @@ def main():
 
     # draw candles
     for i, candle in enumerate(candles):
-        t.setx((candle.width * i) + (PADDING * i))
+        t.setx((candle.width * i) + (PAD_X * i))
         draw_candle(t, candle)
 
     turtle.done()
