@@ -4,11 +4,13 @@ class Candle:
         TODO: should currently-rounded values be truncated instead?
         TODO: determine doji range (neither bullish nor bearish)
     """
-    def __init__(self, price_open, price_close, price_high, price_low):
-        self.open = price_open
-        self.close = price_close
-        self.high = price_high
-        self.low = price_low
+    def __init__(self, timestamp, open_, close, high, low, volume):
+        self.open = open_
+        self.close = close
+        self.high = high
+        self.low = low
+        self.volume = volume
+        self.timestamp = timestamp
 
         self.is_bullish = self.close - self.open >= 0
         self.color = "green" if self.is_bullish else "red"
