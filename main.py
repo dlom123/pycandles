@@ -22,28 +22,14 @@ def main():
     args = parser.parse_args()
 
     # get market data
-    url = f"{YAHOO_BASE_URL}/v8/finance/chart/{args.ticker}"
-    params = {
-        "range": args.range.lower(),
-        "interval": args.interval.lower(),
-        "includePrePost": args.no_pre_post
-    }
-    r = requests.get(url, params=params)
-    if r.status_code != 200:
-        print("Error")
-        sys.exit(1)
-    data = r.json()['chart']['result'][0]
-    quotes = data['indicators']['quote'][0]
-    timestamps = data['timestamp']
+    data = get_stock_data(
+        args.ticker,
+        args.range.lower(),
+        args.interval.lower(),
+        args.no_pre_post
+    )
+    # bundle data into dictionaries
     fields = ("timestamp", "open", "close", "high", "low", "volume")
-    data = list(zip(
-        timestamps,
-        quotes["open"],
-        quotes["close"],
-        quotes["high"],
-        quotes["low"],
-        quotes["volume"]
-    ))
     candle_data = [
         {f: round(v, 2) for f, v in zip(fields, item)}
         for item in data
@@ -89,26 +75,55 @@ def create_parser():
         description="Candlestick chart generator for stocks")
     parser.add_argument("ticker", help="stock ticker symbol")
     parser.add_argument(
-        "-r", "--range",
-        help="chart time range (e.g., 1d, 5d, 1mo, 1y)",
-        default="1d")
-    parser.add_argument(
         "-i", "--interval",
         help="candle time interval (e.g., 1m, 1h, 1d)",
-        default="1h")
+        default="1h"
+    )
+    parser.add_argument(
+        "-r", "--range",
+        help="chart time range (e.g., 1d, 5d, 1mo, 1y)",
+        default="1d"
+    )
     parser.add_argument(
         "--no-pre-post",
         action="store_false",
-        help="hide pre-market and post-market data")
-    parser.add_argument(
-        "--no-volume",
-        action="store_true",
-        help="hide volume bars")
+        help="hide pre-market and post-market data"
+    )
     parser.add_argument(
         "--no-wicks",
         action="store_true",
-        help="hide wicks")
+        help="hide wicks"
+    )
     return parser
+
+
+def get_stock_data(
+                   ticker: str,
+                   range: str,
+                   interval: str,
+                   prepost: bool = True):
+    url = f"{YAHOO_BASE_URL}/v8/finance/chart/{ticker}"
+    params = {
+        "range": range.lower(),
+        "interval": interval.lower(),
+        "includePrePost": prepost
+    }
+    r = requests.get(url, params=params)
+    if r.status_code != 200:
+        print(f"Error: {r.text}")
+        sys.exit(1)
+    data = r.json()['chart']['result'][0]
+    quotes = data['indicators']['quote'][0]
+    timestamps = data['timestamp']
+    data = list(zip(
+        timestamps,
+        quotes["open"],
+        quotes["close"],
+        quotes["high"],
+        quotes["low"],
+        quotes["volume"]
+    ))
+    return data
 
 
 def draw_candle(
@@ -138,7 +153,6 @@ def draw_real_body(t: turtle.Turtle, candle: Candle) -> None:
     t.setheading(SOUTH)
     t.sety(candle.real_body_bottom)
     t.end_fill()
-    t.pendown()
 
 
 def draw_wicks(t: turtle.Turtle, candle: Candle) -> None:
