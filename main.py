@@ -1,6 +1,7 @@
 import argparse
 import sys
 import turtle
+import uuid
 from candle import Candle
 import requests
 
@@ -103,12 +104,15 @@ def get_stock_data(
                    interval: str,
                    prepost: bool = True):
     url = f"{YAHOO_BASE_URL}/v8/finance/chart/{ticker}"
+    headers = {
+        'user-agent': str(uuid.uuid4()),
+    }
     params = {
         "range": range.lower(),
         "interval": interval.lower(),
-        "includePrePost": prepost
+        "includePrePost": prepost,
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, headers=headers, params=params)
     if r.status_code != 200:
         print(f"Error: {r.text}")
         sys.exit(1)
